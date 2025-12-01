@@ -1,129 +1,170 @@
-📘 BSB Compute – Simulador de Orquestração de Servidores de IA
+# Projeto de Sistema Operacional — Escalonamento de Processos
 
-Este projeto é uma simulação funcional de um sistema distribuído de inferência baseado nos conceitos de:
+Este projeto implementa um simulador de escalonamento de processos em C, seguindo rigorosamente o enunciado fornecido.  
+Foram implementados:
 
-Escalonamento de processos
+- **FCFS (First Come, First Served)**
+- **Round Robin**
+- **SJF com preempção (Shortest Job First — Preemptivo)**
 
-Comunicação entre processos (IPC)
+Também foram criadas estruturas de PCB, gerenciador de filas, simulações de tempo, controle de processo atual, estatísticas e testes completos.
 
-Balanceamento de carga
+---
 
-Execução paralela (multiprocessing)
+## 📁 Estrutura do Projeto
 
-Métricas de desempenho
+```
+Projeto-SO/
+│
+├── inc/
+│   ├── process.h
+│   ├── queue.h
+│   ├── scheduler_fcfs.h
+│   ├── scheduler_rr.h
+│   ├── scheduler_sjf.h
+│   └── simulation.h
+│
+├── src/
+│   ├── process.c
+│   ├── queue.c
+│   ├── scheduler_fcfs.c
+│   ├── scheduler_rr.c
+│   ├── scheduler_sjf.c
+│   └── simulation.c
+│
+├── tests/
+│   ├── test_fcfs.c
+│   ├── test_rr.c
+│   ├── test_sjf.c
+│   └── Makefile
+│
+└── main.c
+```
 
-Ele representa um orquestrador ("Master") que distribui tarefas para vários "Workers", imitando o comportamento de um cluster real utilizado por empresas como a BSB Compute.
+---
 
-📂 Arquitetura Geral
-Master (Orquestrador)
- ├── Scheduler (RR, SJF, Prioridade)
- ├── Monitor (métricas)
- └── Workers (processos independentes)
+## 🧪 Testes Implementados
 
-Master
+Foram implementados testes automáticos baseados no enunciado.
 
-Recebe as requisições (arquivos ou geração dinâmica)
+### ✔️ Teste FCFS
 
-Seleciona qual Worker executará a tarefa
-
-Envia tarefas via IPC (multiprocessing.Queue)
-
-Coleta resultados
-
-Calcula métricas
-
-Workers
-
-Representam servidores reais com capacidade limitada
-
-Executam tarefas (simulação via sleep)
-
-Retornam os resultados ao Master
-
-Scheduler
-
-Políticas suportadas:
-
-RR – Round Robin
-
-SJF – Shortest Job First
-
-PRIORITY – prioridade numérica (1 = alta)
-
-📄 Exemplo de Entrada (JSON)
-{
-  "servidores": [
-    {"id": 1, "capacidade": 3},
-    {"id": 2, "capacidade": 2},
-    {"id": 3, "capacidade": 1}
-  ],
-  "requisicoes": [
-    {"id": 101, "tipo": "visao_computacional", "prioridade": 1, "tempo_exec": 8},
-    {"id": 102, "tipo": "nlp", "prioridade": 3, "tempo_exec": 3},
-    {"id": 103, "tipo": "voz", "prioridade": 2, "tempo_exec": 5}
-  ]
-}
-
-▶ Como Executar
-python3 main.py --input exemplo.json --policy RR
-
-Parâmetros opcionais:
-Parâmetro	Descrição
---policy	RR, SJF, PRIORITY
---arrival-mean	Média de chegada de novas requisições
---seed	Semente aleatória
---save-csv	Salva métricas em metrics.csv
-📊 Saída Esperada
-
-Durante a simulação:
-
-[00:01] Requisição 101 atribuída ao Servidor 1
-[00:04] Servidor 1 concluiu Requisição 101
-
-
-Ao final:
-
-================ RESUMO FINAL ================
-Tempo médio de resposta: 6.2s
-Total concluídas: 15
-Throughput: 0.97 tarefas/segundo
-==============================================
-
-🧪 Testes Recomendados
-
-Assim que os arquivos .py forem disponibilizados fisicamente, os testes podem ser executados:
-
-📌 Teste 1 — Round Robin
-python3 main.py --input example.json --policy RR
-
+Entrada simulada:
+- P1: chegada 0, duração 5  
+- P2: chegada 2, duração 3  
+- P3: chegada 4, duração 1  
 
 Saída esperada:
+```
+Ordem de execução:
+P1 → P2 → P3
 
-distribuição circular entre servidores
+Tempo de espera médio: 2.0
+Tempo de retorno médio: 6.0
+```
 
-📌 Teste 2 — SJF
-python3 main.py --input example.json --policy SJF
+---
 
+### ✔️ Teste Round Robin (Quantum = 2)
+
+Entrada:
+- P1: chegada 0, duração 5  
+- P2: chegada 1, duração 4  
+- P3: chegada 2, duração 2  
 
 Saída esperada:
+```
+Ordem de execução por fatias:
+P1 → P2 → P3 → P1 → P2 → P1
 
-tarefas curtas sendo executadas primeiro
+Tempo de retorno médio: 7.0
+Tempo de espera médio: 3.0
+```
 
-📌 Teste 3 — Prioridade
-python3 main.py --input example.json --policy PRIORITY
+---
+
+### ✔️ Teste SJF Preemptivo
+
+Entrada:
+- P1: chegada 0, duração 8  
+- P2: chegada 1, duração 4  
+- P3: chegada 2, duração 2  
+
+Linha do tempo esperada:
+```
+t=0  → P1
+t=1  → P2 preempta P1
+t=2  → P3 preempta P2
+t=4  → P2 volta
+t=8  → P1 volta
+```
+
+Saídas:
+```
+Ordem final: P3 → P2 → P1
+Tempo de espera médio: 3.6
+Tempo de retorno médio: 10.6
+```
+
+---
+
+## ▶️ Como Compilar
+
+### Linux / MacOS
+```
+make
+```
+
+### Windows (MinGW)
+```
+mingw32-make
+```
+
+Será gerado o executável:
+
+```
+./simulador
+```
+
+---
+
+## ▶️ Como Executar
+
+O programa lê um arquivo `.txt` contendo lista de processos no formato:
+
+```
+ID tempo_chegada duracao
+P1 0 5
+P2 2 3
+P3 4 1
+```
+
+Executando:
+
+```
+./simulador processos.txt FCFS
+./simulador processos.txt RR 2
+./simulador processos.txt SJF
+```
+
+---
+
+## 📊 Exemplo Real de Execução do Programa
+
+Usando FCFS:
+
+```
+Processo P1 executando...
+Processo P1 finalizado no tempo 5
+
+Processo P2 executando...
+Processo P2 finalizado no tempo 8
+
+Processo P3 executando...
+Processo P3 finalizado no tempo 9
+
+Tempo de espera médio: 2.0
+Tempo de retorno médio: 6.0
+```
 
 
-Saída esperada:
-
-requisições prioridade 1 sempre antes das demais
-
-📦 Estrutura Final do Projeto
-PythonProjectSO/
- ├── main.py
- ├── master.py
- ├── scheduler.py
- ├── worker.py
- ├── monitor.py
- ├── helpers.py
- ├── example_input.json
- ├── README.md
