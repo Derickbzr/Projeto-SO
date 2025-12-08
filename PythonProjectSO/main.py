@@ -1,23 +1,38 @@
 # main.py
-import argparse
 from master import Master
 from helpers import load_input
 
 def main():
-    parser = argparse.ArgumentParser(description="Simulador BSB Compute (workers paralelos)")
-    parser.add_argument("--input", required=True, help="arquivo JSON de entrada (ex: example_input.json)")
-    parser.add_argument("--policy", choices=["RR","SJF","PRIORITY"], default="RR")
-    parser.add_argument("--arrival-mean", type=float, default=1.0, help="média do tempo entre chegadas (s). 0 -> chegada imediata")
-    parser.add_argument("--seed", type=int, default=42)
-    args = parser.parse_args()
+    # CONFIGURAÇÕES PADRÃO (modifique como quiser)
+    INPUT_FILE = "example_input.json"     # <-- coloque aqui o nome do arquivo JSON padrão
+    POLICY = "RR"                 # opções: RR, SJF, PRIORITY
+    ARRIVAL_MEAN = 0              # 0 = chegada imediata
+    SEED = 42
 
-    data = load_input(args.input)
+    # Carregar JSON
+    data = load_input(INPUT_FILE)
     servers = data["servidores"]
     tasks = data["requisicoes"]
 
-    m = Master(servers, tasks, policy=args.policy, arrival_mean=(args.arrival_mean if args.arrival_mean>0 else 0.01), seed=args.seed, realtime=(args.arrival_mean>0))
+    print("Iniciando simulação BSB Compute...")
+    print(f"Arquivo de entrada: {INPUT_FILE}")
+    print(f"Política: {POLICY}")
+    print(f"Arrival mean: {ARRIVAL_MEAN}")
+
+    # Criar Master
+    m = Master(
+        servers,
+        tasks,
+        policy=POLICY,
+        arrival_mean=(ARRIVAL_MEAN if ARRIVAL_MEAN > 0 else 0.01),
+        seed=SEED,
+        realtime=(ARRIVAL_MEAN > 0)
+    )
+
+    # Rodar simulação
     m.run()
     m.print_summary()
+
 
 if __name__ == "__main__":
     main()
