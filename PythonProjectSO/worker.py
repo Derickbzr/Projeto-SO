@@ -50,8 +50,6 @@ def worker_process(worker_id, capacity, in_queue, out_queue):
                 task = msg["task"]
                 # Coloca a tarefa na fila interna (as threads vão pegar quando disponíveis)
                 internal_q.put(task)
-            elif msg.get("cmd") == "ping":
-                out_queue.put({"type": "pong", "worker": worker_id, "time": time.time()})
             else:
                 # Mensagem desconhecida — ignorar
                 pass
@@ -81,3 +79,4 @@ def simulate_cpu_work(seconds, peso_cpu, capacity):
             # loop CPU-bound
             for i in range(ops):
                 x += i * i
+
